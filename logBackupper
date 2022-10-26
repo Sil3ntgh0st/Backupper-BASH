@@ -1,14 +1,13 @@
 #!/bin/bash
-
 saveloc="/var/backups/logBackupper";
 d=`date +%m-%d-%Y`
+if [ "$EUID" -ne 0 ]
+then
+        printf "[\033[1;33mCaution\033[0m] Superuser not detected. Run this script with sudo to avoid permission errors. [\033[1;33mCaution\033[0m]\n";
+exit
+fi
 if [ ! -d $saveloc ]
 then
-       if [ "$EUID" -ne 0 ]
-       then
-               printf "[\033[1;33mCaution\033[0m] logBackupper directory and files not found. Run this script with sudo to avoid errors. [\033[1;33mCaution\033[0m]\n";
-        exit
-        fi
         mkdir $saveloc
         mkdir $saveloc/logs
         mkdir $saveloc/error
@@ -23,8 +22,8 @@ if [[ "$loc" == /* || "$loc" == ./* || "$loc" == ~/* ]];
 then
         break   #echo "$loc is an absolute path";
 else
-        #echo "$loc is a relative path";
-        loc="./$loc";
+        loc=$(realpath $loc);
+        echo "$loc";
 fi
 printf "Searching for log files in $loc"
 
@@ -32,7 +31,7 @@ if ls ${loc}/*.log* &>/dev/null;
 then
         sleep 1;
         printf " [\033[1;32mFound\033[0m]\n";
-        printf "Hashed on %(%F)T\n\n" >> $saveloc/hashed_logs.txt;
+        printf "\nHashed on %(%F)T\n\n" >> $saveloc/hashed_logs.txt;
         for f in $loc/*.log*
         do
                 b=$(basename -- "$f")
