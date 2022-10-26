@@ -23,7 +23,7 @@ then
         break   #echo "$loc is an absolute path";
 else
         loc=$(realpath $loc);
-        echo "$loc";
+        #echo "$loc";
 fi
 printf "Searching for log files in $loc"
 
