@@ -1,0 +1,49 @@
+#!/bin/bash
+
+saveloc="/var/backups/logBackupper";
+d=`date +%m-%d-%Y`
+if [ ! -d $saveloc ]
+then
+       if [ "$EUID" -ne 0 ]
+       then
+               printf "[\033[1;33mCaution\033[0m] logBackupper directory and files not found. Run this script with sudo to avoid errors. [\033[1;33mCaution\033[0m]\n";
+        exit
+        fi
+        mkdir $saveloc
+        mkdir $saveloc/logs
+        mkdir $saveloc/error
+fi
+if [ ! -f $saveloc/hashed_logs.txt ]
+then
+        touch $saveloc/hashed_logs.txt;
+fi
+echo "Insert location to be backed up: ";
+read loc
+if [[ "$loc" == /* || "$loc" == ./* || "$loc" == ~/* ]];
+then
+        break   #echo "$loc is an absolute path";
+else
+        #echo "$loc is a relative path";
+        loc="./$loc";
+fi
+printf "Searching for log files in $loc"
+
+if ls ${loc}/*.log* &>/dev/null;
+then
+        sleep 1;
+        printf " [\033[1;32mFound\033[0m]\n";
+        printf "Hashed on %(%F)T\n\n" >> $saveloc/hashed_logs.txt;
+        for f in $loc/*.log*
+        do
+                b=$(basename -- "$f")
+                #echo "${b%.*}"
+                cp $f $saveloc/logs/${b%.*}-$d.log
+                md5sum $f >> $saveloc/hashed_logs.txt
+        done
+else
+        sleep 2;
+        printf " [\033[0;31mFailed\033[0m]\n"
+        echo "No log files exist!";
+        sleep 1;
+        echo "Shutting down..";
+fi
