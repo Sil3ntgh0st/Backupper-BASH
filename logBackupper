@@ -8,12 +8,12 @@ exit
 fi
 if [ ! -d $saveloc ]
 then
-        mkdir $saveloc
-        mkdir $saveloc/logs
-        mkdir $saveloc/error
+        mkdir $saveloc;
+        mkdir $saveloc/logs;
+        mkdir $saveloc/error;
 fi
 printf "Error log for %(%F %T)T\n\n" >> $saveloc/error/error_log_$d.txt;
-exec 2>> $saveloc/error/error_log_$d.txt
+exec 2>> $saveloc/error/error_log_$d.txt;
 if [ ! -f $saveloc/hashed_logs.txt ]
 then
         touch $saveloc/hashed_logs.txt;
@@ -27,7 +27,7 @@ else
         loc=$(realpath $loc); #If path is relative, change to absolute
 fi
 
-printf "Searching for log files in $loc"
+printf "Searching for log files in $loc";
 
 if ls ${loc}/*.log* &>/dev/null;
 then
@@ -39,8 +39,8 @@ then
                if [ $? -eq 0 ]; then
                 b=$(basename -- "$f") #converts f to name of file
                 printf "$f \t[\033[1;32mOK\033[0m]\n";
-                cp $f $saveloc/logs/${b%.*}-$d.log #Removes path in backup and names as filename.log-DD-MM-YYYY
-                md5sum $f >> $saveloc/hashed_logs.txt
+                cp $f $saveloc/logs/${b%.*}-$d.log; #Removes path in backup and names as filename.log-DD-MM-YYYY
+                md5sum $f >> $saveloc/hashed_logs.txt;
                 else
                         printf "$f [\033[0;30mError\033[0m]\n";
                         printf "$f" 2>> $saveloc/error/error_log_$d.txt;
@@ -48,7 +48,7 @@ then
         done
 else
         sleep 2;
-        printf " [\033[0;31mFailed\033[0m]\n"
+        printf " [\033[0;31mFailed\033[0m]\n";
         printf "Error - No log files found in $loc\n" >> $saveloc/error/error_log_$d.txt;
         echo "No log files exist!";
         sleep 1;
