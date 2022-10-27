@@ -1,8 +1,6 @@
 #!/bin/bash
 saveloc="/var/backups/logBackupper";
 d=`date +%m-%d-%Y`
-printf "Error log for %(%F %T)T\n\n" >> $saveloc/error/error_log_$d.txt;
-exec 2>> $saveloc/error/error_log_$d.txt
 if [ "$EUID" -ne 0 ]
 then
         printf "[\033[1;33mCaution\033[0m] Superuser not detected. Run this script with sudo to avoid permission errors. [\033[1;33mCaution\033[0m]\n";
@@ -14,6 +12,8 @@ then
         mkdir $saveloc/logs
         mkdir $saveloc/error
 fi
+printf "Error log for %(%F %T)T\n\n" >> $saveloc/error/error_log_$d.txt;
+exec 2>> $saveloc/error/error_log_$d.txt
 if [ ! -f $saveloc/hashed_logs.txt ]
 then
         touch $saveloc/hashed_logs.txt;
