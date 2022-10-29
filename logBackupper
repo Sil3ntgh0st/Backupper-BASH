@@ -13,21 +13,20 @@ then
         mkdir $saveloc/error;
 fi
 printf "Error log for %(%F %T)T\n\n" >> $saveloc/error/error_log_$d.txt;
-exec 2>> $saveloc/error/error_log_$d.txt;
+#exec 2>> $saveloc/error/error_log_$d.txt; #Legacy error dump
 if [ ! -f $saveloc/hashed_logs.txt ]
 then
         touch $saveloc/hashed_logs.txt;
 fi
 echo "Insert location to be backed up: ";
 read loc
-if [[ "$loc" == /* || "$loc" == ./* || "$loc" == ~/* ]];
-then
-        continue        #If path is absolute continue
-else
-        loc=$(realpath $loc); #If path is relative, change to absolute
-fi
+case "$loc" in "~/"*)
+        loc="${HOME}/${loc#"~/"}"
+esac
 
-printf "Searching for log files in $loc";
+loc=$(realpath $loc); #Forces input to absolute path
+
+printf "Searching for log files in $loc"
 
 if ls ${loc}/*.log* &>/dev/null;
 then
