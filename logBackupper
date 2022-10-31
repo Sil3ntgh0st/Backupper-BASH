@@ -1,26 +1,26 @@
 #!/bin/bash
 saveloc="/var/backups/logBackupper";
 d=`date +%m-%d-%Y`
-if [ "$EUID" -ne 0 ]
+#exec 2>> $saveloc/error/error_log_$d.txt #Legacy error dump
+if [ "$EUID" -ne 0 ] #If the user is not running in superuser, close script.
 then
         printf "[\033[1;33mCaution\033[0m] Superuser not detected. Run this script with sudo to avoid permission errors. [\033[1;33mCaution\033[0m]\n";
 exit
 fi
-if [ ! -d $saveloc ]
+if [ ! -d $saveloc ] #If directories don't exist. Create them.
 then
-        mkdir $saveloc;
-        mkdir $saveloc/logs;
-        mkdir $saveloc/error;
+        mkdir $saveloc
+        mkdir $saveloc/logs
+        mkdir $saveloc/error
 fi
-printf "Error log for %(%F %T)T\n\n" >> $saveloc/error/error_log_$d.txt;
-#exec 2>> $saveloc/error/error_log_$d.txt; #Legacy error dump
 if [ ! -f $saveloc/hashed_logs.txt ]
 then
         touch $saveloc/hashed_logs.txt;
 fi
+printf "Error log for %(%F %T)T\n\n" >> $saveloc/error/error_log_$d.txt;
 echo "Insert location to be backed up: ";
 read loc
-case "$loc" in "~/"*)
+case "$loc" in "~/"*) #Sanitizes the tilde key from 'Tilde Expansion'.
         loc="${HOME}/${loc#"~/"}"
 esac
 
@@ -28,29 +28,29 @@ loc=$(realpath $loc); #Forces input to absolute path
 
 printf "Searching for log files in $loc"
 
-if ls ${loc}/*.log* &>/dev/null;
+if ls ${loc}/*.log* &>/dev/null; #If statement to see if there are log files in the given directory.
 then
         sleep 1;
         printf " [\033[1;32mFound\033[0m]\n"; #Green Found
         printf "\nHashed on %(%F %T)T\n\n" >> $saveloc/hashed_logs.txt;
-        for f in $loc/*.log*
+        for f in $loc/*.log* #For each file, create a backup and append to hashed_logs.txt
         do
                if [ $? -eq 0 ]; then
                 b=$(basename -- "$f") #converts f to name of file
                 printf "$f \t[\033[1;32mOK\033[0m]\n";
-                cp $f $saveloc/logs/${b%.*}-$d.log; #Removes path in backup and names as filename.log-DD-MM-YYYY
-                md5sum $f >> $saveloc/hashed_logs.txt;
-                else
+                cp $f $saveloc/logs/${b%.*}-$d.log #Removes path in backup and names as filename.log-DD-MM-YYYY
+                md5sum $f >> $saveloc/hashed_logs.txt
+                else #If by an off-chance there is an error. It will be thrown into the error log.
                         printf "$f [\033[0;30mError\033[0m]\n";
                         printf "$f" 2>> $saveloc/error/error_log_$d.txt;
                 fi
         done
 else
         sleep 2;
-        printf " [\033[0;31mFailed\033[0m]\n";
-        printf "Error - No log files found in $loc\n" >> $saveloc/error/error_log_$d.txt;
+        printf " [\033[0;31mFailed\033[0m]\n"
+        printf "Error - No log files found in $loc\n" >> $saveloc/error/error_log_$d.txt; #Outputs why failed to error log
         echo "No log files exist!";
         sleep 1;
         echo "Shutting down..";
-        exit 1;
+        exit 1; #Exits the script.
 fi
