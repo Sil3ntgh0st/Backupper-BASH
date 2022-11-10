@@ -32,12 +32,13 @@ if ls ${loc}/*.log* &>/dev/null; #If statement to see if there are log files in 
 then
         sleep 1;
         printf " [\033[1;32mFound\033[0m]\n"; #Green Found
+        sleep 1;
         printf "\nHashed on %(%F %T)T\n\n" >> $saveloc/hashed_logs.txt;
         for f in $loc/*.log* #For each file, create a backup and append to hashed_logs.txt
         do
                if [ $? -eq 0 ]; then
                 b=$(basename -- "$f") #converts f to name of file
-                printf "$f \t[\033[1;32mOK\033[0m]\n";
+                printf "[ \033[1;32mOK\033[0m ]\t$f\n";
                 cp $f $saveloc/logs/${b%.*}-$d.log #Removes path in backup and names as filename.log-DD-MM-YYYY
                 md5sum $f >> $saveloc/hashed_logs.txt
                 else #If by an off-chance there is an error. It will be thrown into the error log.
